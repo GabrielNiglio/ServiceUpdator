@@ -135,7 +135,7 @@ namespace CUpdator
 
 
                     List<RegistroUpdater> lista;
-                    if (aplicacion == "-serv")
+                    if (aplicacion != "-serv")
                     {
                         lista = getAplicacion();
                     }

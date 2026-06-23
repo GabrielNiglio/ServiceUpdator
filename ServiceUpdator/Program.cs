@@ -37,10 +37,16 @@ namespace ServiceUpdator
 
             Thread hilo = new Thread(() =>
             {
-                BabyServer server = new InfoController(start, actuConf, form);
+                try
+                {
+                BabyServerLocal server = new InfoController(start, actuConf, form);
 
                 server.setPuerto(8050);
                 server.iniciar();
+
+                }catch(Exception e)
+                {
+                }
             });
             hilo.Start();
 

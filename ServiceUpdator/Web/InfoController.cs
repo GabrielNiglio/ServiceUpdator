@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace ServiceUpdator.Web
 {
-    internal class InfoController: BabyServer
+    internal class InfoController: BabyServerLocal
     {
 
         private readonly DateTime start;
@@ -80,7 +80,13 @@ namespace ServiceUpdator.Web
             {
                 string rutaCompletaExe = app.rutaHasta + "\\" + app.ejecutable;
 
-                string version = FileVersionInfo.GetVersionInfo(rutaCompletaExe).FileVersion;
+                string version = "No existe";
+
+                try
+                {
+                    version= FileVersionInfo.GetVersionInfo(rutaCompletaExe).FileVersion;
+                }
+                catch { }
 
                 return new { app.aplicacion, version };
             });
