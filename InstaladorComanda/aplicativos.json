@@ -1,0 +1,24 @@
+{
+  "aplicativos": [
+    {
+      "aplciacion": "WSUpdatorLauncher",
+      "check": true
+    },
+    {
+      "aplciacion": "WSComanda",
+      "check": true
+    },
+    {
+      "aplciacion": "ServiceUpdator",
+      "check": true
+    },
+    {
+      "aplciacion": "CUpdator",
+      "check": true
+    },
+    {
+      "aplciacion": "WSCobros",
+      "check": false
+    }
+  ]
+}

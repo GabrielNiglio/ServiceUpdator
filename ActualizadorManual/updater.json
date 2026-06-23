@@ -1,0 +1,65 @@
+[
+  {
+    "aplicacion": "CinetMozos",
+    "rutaDesde": "C:\\CINET\\ACTUALIZACIONES\\RUTA1Fredo\\CinetMozos.zip",
+    "rutaHasta": "C:\\CINET\\CinetMozos",
+    "ejecutable": "MozosApi.exe",
+    "esServicio": true,
+    "forzado": false,
+    "unico": true
+  },
+  {
+    "aplicacion": "profit",
+    "rutaDesde": "C:\\CINET\\ACTUALIZACIONES\\RUTA1Fredo\\profit9.zip",
+    "rutaHasta": "C:\\CINET\\profit",
+    "ejecutable": "profit9.exe",
+    "esServicio": false,
+    "forzado": false,
+    "unico": false
+  },
+  {
+    "aplicacion": "CostosMostaza",
+    "rutaDesde": "C:\\CINET\\ACTUALIZACIONES\\RUTA1Fredo\\CostosMostaza.zip",
+    "rutaHasta": "C:\\CINET\\CostosMostaza",
+    "ejecutable": "CostosMostaza.exe",
+    "esServicio": false,
+    "forzado": false,
+    "unico": true
+  },
+  {
+    "aplicacion": "CinetAdmin",
+    "rutaDesde": "C:\\CINET\\ACTUALIZACIONES\\RUTA1Fredo\\CinetAdmin.zip",
+    "rutaHasta": "C:\\CINET\\CinetAdmin",
+    "ejecutable": "CinetAdmin.exe",
+    "esServicio": true,
+    "forzado": false,
+    "unico": false
+  },
+  {
+    "aplicacion": "AUpdater",
+    "rutaDesde": "C:\\CINET\\ACTUALIZACIONES\\RUTA1Fredo\\AUpdater.zip",
+    "rutaHasta": "C:\\CINET\\AUpdater",
+    "ejecutable": "UpdaterService.exe",
+    "esServicio": true,
+    "forzado": false,
+    "unico": false
+  },
+  {
+    "aplicacion": "ServiceUpdator",
+    "rutaDesde": "C:\\CINET\\ACTUALIZACIONES\\RUTA1Fredo\\ServiceUpdator.zip",
+    "rutaHasta": "C:\\CINET\\ServiceUpdator",
+    "ejecutable": "ServiceUpdator.exe",
+    "esServicio": false,
+    "forzado": false,
+    "unico": true
+  },
+  {
+    "aplicacion": "CUpdator",
+    "rutaDesde": "C:\\CINET\\ACTUALIZACIONES\\RUTA1Fredo\\CUpdator.zip",
+    "rutaHasta": "C:\\CINET\\CUpdator",
+    "ejecutable": "CUpdator.exe",
+    "esServicio": false,
+    "forzado": true,
+    "unico": false
+  }
+]
