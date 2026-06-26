@@ -22,6 +22,7 @@ namespace ServiceUpdator
         private DateTime ultimoDiaHparamLoc = DateTime.MinValue;
         private readonly cLog logger;
         private readonly IConfiguracionActualizacion configuracionActualizacion;
+        private readonly CancellationToken _cancel;
 
         private DateTime ultimoCiclo { get; set; }
 
@@ -30,30 +31,40 @@ namespace ServiceUpdator
             return ultimoCiclo;
         }
 
-        public FormServiceUpdator(IConfiguracionActualizacion ActuConf)
+        public FormServiceUpdator(IConfiguracionActualizacion ActuConf, CancellationToken cancel)
         {
             InitializeComponent();
 
             this.logger = new cLog("cLog_Updateador_");
             this.configuracionActualizacion = ActuConf;
+            _cancel = cancel;
         }
 
 
-        private void ciclar(Object myObject, EventArgs myEventArgs)
+        private void ciclar(CancellationToken cancellation)
         {
 
             try
             {
 
 
-                while (true)
+                while (!cancellation.IsCancellationRequested)
                 {
                     Stopwatch sw = new Stopwatch();
                     sw.Start();
                     actualizar();
 
-                    double esperar = Math.Max(60000 - sw.ElapsedMilliseconds, 0);
-                    Thread.Sleep(TimeSpan.FromMilliseconds(esperar));
+
+                    while(Math.Max(60000 - sw.ElapsedMilliseconds, 0) > 0)
+                    {
+                        Thread.Sleep(TimeSpan.FromMilliseconds(100));
+                        if (cancellation.IsCancellationRequested)
+                        {
+                            return;
+                        }
+
+                    }
+                    
                 }
             }
             catch (Exception ex) { 
@@ -83,7 +94,7 @@ namespace ServiceUpdator
             }
             catch { }
             
-            Thread hilo = new Thread(() => ciclar(null, null));
+            Thread hilo = new Thread(() => ciclar(_cancel));
             hilo.Start();
            
             //System.Windows.Forms.Timer timer = new System.Windows.Forms.Timer();

@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace ServiceUpdator.Web
 {
-    internal class InfoController: BabyServerLocal
+    internal class InfoController : BabyServerLocal
     {
 
         private readonly DateTime start;
@@ -23,10 +23,12 @@ namespace ServiceUpdator.Web
         private void configurar()
         {
             this.addEndpoint("/", doGetInfo);
+            this.addEndpoint("/info", doAppInfo);
 
             this.addEndpoint("/ruta", doDownloadFromUpd);
 
             this.addEndpoint("/rutax", doDownloadFromRutax);
+            this.addEndpoint("/descarga", doDescarga);
 
         }
 
@@ -54,6 +56,25 @@ namespace ServiceUpdator.Web
             }
         }
 
+        private Object doDescarga(HttpListenerRequest req, HttpListenerResponse res)
+        {
+            var appName = req.QueryString["app"];
+            var apps = actuConf.getAplicacionActualizable(appName);
+            try
+            {
+                string ruta = apps.rutaDesdeLoc;
+
+                string nombreZip = apps.rutaDesdeLoc.Split('\\').Last();
+
+                return new BabyServerLocal.ArchivoPorRuta(nombreZip, ruta);
+            }
+            catch (Exception ex)
+            {
+                return ex;
+            }
+        }
+
+
         private Object doDownloadFromRutax(HttpListenerRequest req, HttpListenerResponse res)
         {
             var appName = req.QueryString["app"];
@@ -70,7 +91,48 @@ namespace ServiceUpdator.Web
             }
         }
 
+        public class RespAppInfo
+        {
+            public string aplicacion { get; set; }
+            public string fecha { get; set; }
+            public string urlDescarga { get; set; }
+        }
 
+
+
+        private Object doAppInfo(HttpListenerRequest req, HttpListenerResponse res)
+        {
+            var appName = req.QueryString["app"];
+
+
+            RespAppInfo respAppInfo = new RespAppInfo();
+            respAppInfo.aplicacion = appName;
+
+            string rutaBase = req.Url
+                 .ToString()
+                 .Split('?')[0]
+                 .Replace("/info", "");
+
+
+            var appDara = actuConf.getAplicacionActualizable(appName);
+            if (appDara == null)
+            {
+                return respAppInfo;
+            }
+
+            respAppInfo.urlDescarga = $"{rutaBase}/descarga?app={appName}";
+
+
+            FileInfo fi = new FileInfo(appDara.rutaDesdeLoc);
+            string fechaExe = fi.LastWriteTime.ToString("yyyy/MM/dd HH:mm:ss");
+            respAppInfo.fecha = fechaExe;
+
+
+
+            return respAppInfo;
+
+
+        }
         private Object doGetInfo(HttpListenerRequest req, HttpListenerResponse res)
         {
 
@@ -84,7 +146,7 @@ namespace ServiceUpdator.Web
 
                 try
                 {
-                    version= FileVersionInfo.GetVersionInfo(rutaCompletaExe).FileVersion;
+                    version = FileVersionInfo.GetVersionInfo(rutaCompletaExe).FileVersion;
                 }
                 catch { }
 

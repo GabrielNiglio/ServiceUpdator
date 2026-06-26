@@ -28,12 +28,15 @@ namespace ServiceUpdator
 
             DateTime start = DateTime.Now;
 
+            var cts = new CancellationTokenSource();
+            var token = cts.Token;
+
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
 
             IConfiguracionActualizacion actuConf = ConfiguracionActualizacionFactory.getDefault();
 
-            FormServiceUpdator form = new FormServiceUpdator(actuConf);
+            FormServiceUpdator form = new FormServiceUpdator(actuConf, token);
 
             Thread hilo = new Thread(() =>
             {
@@ -42,7 +45,7 @@ namespace ServiceUpdator
                 BabyServerLocal server = new InfoController(start, actuConf, form);
 
                 server.setPuerto(8050);
-                server.iniciar();
+                server.iniciar(token);
 
                 }catch(Exception e)
                 {
@@ -51,6 +54,9 @@ namespace ServiceUpdator
             hilo.Start();
 
             Application.Run(form);
+
+            cts.Cancel();
+
         }
     }
 }

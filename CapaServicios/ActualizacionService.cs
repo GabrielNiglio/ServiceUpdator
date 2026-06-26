@@ -3,12 +3,16 @@
 using CapaServicios.Classes;
 using ICSharpCode.SharpZipLib.Zip;
 using Microsoft.Win32;
+using Newtonsoft.Json;
 using System;
 using System.Collections;
 using System.Configuration.Install;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Net;
+using System.Net.Http;
+using System.Security.Policy;
 using System.ServiceProcess;
 using System.Threading.Tasks;
 
@@ -56,11 +60,22 @@ namespace CapaServicios
                 p.StartInfo.CreateNoWindow = true;
                 p.StartInfo.WorkingDirectory = registro.rutaHasta;
                 int xd = Process.GetProcessesByName(registro.ejecutable).Length;
-                if (!registro.unico || Process.GetProcessesByName(registro.ejecutable.Replace(".exe", "")).Length == 0)
+
+                bool esUnico = registro.unico;
+                int abiertos = Process.GetProcessesByName(registro.ejecutable.Replace(".exe", "")).Length;
+
+                loggAction("Actualizar", $"Es unica: {esUnico}, Abiertos: {abiertos}");
+
+                if (!esUnico || abiertos == 0)
                 {
                     loggAction("Actualizar", "Iniciando aplicacion...");
                     p.Start();
                     loggAction("Actualizar", "Se inició correctamente");
+                }
+                else
+                {
+                    loggAction("Actualizar", "Se decidió no abrir");
+
                 }
 
             }
@@ -184,13 +199,13 @@ namespace CapaServicios
                 loggAction("Actualizar", "Deteniendo servicio...");
                 try
                 {
-                    ServiceControllerStatus[] estados = 
+                    ServiceControllerStatus[] estados =
                         new[] { ServiceControllerStatus.Stopped, ServiceControllerStatus.StopPending };
 
-                    if (!estados.Contains( servicio.Status ))
+                    if (!estados.Contains(servicio.Status))
                     {
                         servicio.Stop();
-                        servicio.WaitForStatus(ServiceControllerStatus.Stopped,TimeSpan.FromMinutes(1));
+                        servicio.WaitForStatus(ServiceControllerStatus.Stopped, TimeSpan.FromMinutes(1));
                     }
 
 
@@ -308,8 +323,10 @@ namespace CapaServicios
         {
 
 
-            string rutaZip = registro.rutaDesde;
+            string rutaZip = registro.rutaDesdeLoc ?? registro.rutaDesde;
+            string rutaCarpeta = registro.rutaHasta;
             string rutaExe = registro.rutaHasta + @"\" + registro.ejecutable;
+
 
             FileInfo fZip = new FileInfo(rutaZip);
             FileInfo fExe = new FileInfo(rutaExe);
@@ -349,7 +366,7 @@ namespace CapaServicios
                     try
                     {
                         var zipfile = new FastZip();
-                        zipfile.ExtractZip(registro.rutaDesde, registro.rutaHasta, "");
+                        zipfile.ExtractZip(rutaZip,rutaCarpeta, "");
                         finalizado = true;
                     }
                     catch (Exception ex)
@@ -390,12 +407,55 @@ namespace CapaServicios
 
             if (app != null)
             {
+                if (registro.rutaDesdeRem1 != null)
+                {
+                    bajarZip(app, registro, logAction);
+                }
+
                 descomprimirZip(app, registro, logAction);
             }
 
             logAction("Actualizar", "Fin");
 
 
+        }
+
+        public class RespuestaInfo
+        {
+            public string aplicacion { get; set; }
+            public string fecha { get; set; }
+            public string urlDescarga { get; set; }
+        }
+
+        private void bajarZip(Aplicacion app, RegistroUpdater registro, Action<string, string> logAction)
+        {
+            try
+            {
+
+                HttpClient cliente = new HttpClient();
+                HttpResponseMessage resp = cliente.GetAsync(registro.rutaDesdeRem1).Result;
+
+                string jInfo = resp.Content.ReadAsStringAsync().Result;
+
+                RespuestaInfo info = JsonConvert.DeserializeObject<RespuestaInfo>(jInfo);
+
+                string fechaRem = info.fecha;
+                FileInfo fI = new FileInfo(registro.rutaDesdeLoc);
+                string fechaLoc = fI.LastWriteTime.ToString("yyyy/MM/dd HH:mm:ss");
+
+                if (fechaLoc.CompareTo(fechaRem) < 0)
+                {
+
+                    using (WebClient wc = new WebClient())
+                    {
+
+                        File.Delete(registro.rutaDesdeLoc);
+                        wc.DownloadFile(info.urlDescarga, registro.rutaDesdeLoc);
+                    }
+
+                }
+            }
+            catch (Exception ex) { }
         }
     }
 }

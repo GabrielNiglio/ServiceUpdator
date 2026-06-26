@@ -2,8 +2,10 @@
 using CapaServicios.Intefaces;
 using InstaladorComanda;
 using InstaladorComanda.DataAccessExtensions;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -17,21 +19,65 @@ namespace CapaServicios
 
             var registros = this.getAplicacionesActualizables();
 
-            RegistroUpdater registroUpdater = registros.Where(r => r.aplicacion.Equals(nombre)).FirstOrDefault();
+            RegistroUpdater registroUpdater = registros.Where(r => r.aplicacion.ToUpper() == (nombre.ToUpper())).FirstOrDefault();
 
             return registroUpdater;
         }
 
         public List<RegistroUpdater> getAplicacionesActualizables()
         {
-            List<RegistroUpdater> registroUpdaters = null;
+            List<RegistroUpdater> registroUpdatersTemp = new List<RegistroUpdater>();
+            var registroUpdatersDB = new List<RegistroUpdater>();
 
-            ConnectionFactory connectionFactory = new ConnectionFactory();
-
-            using(ConexionGeneral connBackoffice = connectionFactory.connectBackoffice())
+            string rutaTemp = Path.Combine(Path.GetTempPath(), "upd_config.json");
+            try
             {
-                registroUpdaters = connBackoffice.GetRegistroUpdaters();
+
+                if (File.Exists(rutaTemp))
+                {
+                    using (StreamReader sr = new StreamReader(rutaTemp))
+                    {
+                        registroUpdatersTemp = JsonConvert.DeserializeObject<List<RegistroUpdater>>(sr.ReadToEnd());
+
+                    }
+                }
+
             }
+            catch { }
+            try
+            {
+                ConnectionFactory connectionFactory = new ConnectionFactory();
+
+                using (ConexionGeneral connBackoffice = connectionFactory.connectBackoffice())
+                {
+                    registroUpdatersDB = connBackoffice.GetRegistroUpdaters();
+
+
+                }
+         
+
+            }
+            catch
+            {
+
+            }
+            var appsEnBko = registroUpdatersDB.Select(r => r.aplicacion).ToHashSet();
+            var registroUpdaters = registroUpdatersTemp
+                .Where(r => !appsEnBko.Contains(r.aplicacion))
+                .ToList();
+
+            registroUpdaters.AddRange(registroUpdatersDB);
+
+            try
+            {
+                using (StreamWriter sw = new StreamWriter(rutaTemp))
+                {
+                    sw.Write(JsonConvert.SerializeObject(registroUpdaters));
+
+                }
+            }
+            catch { }
+
 
             return registroUpdaters;
 

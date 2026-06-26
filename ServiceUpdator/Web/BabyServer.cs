@@ -5,10 +5,26 @@ using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Text;
+using System.Threading;
 
 
 public class BabyServerLocal
 {
+
+    public class ArchivoPorRuta
+    {
+        public ArchivoPorRuta(string nombre, string ruta)
+        {
+            this.nombre = nombre;
+            this.ruta = ruta;
+        }
+
+        public string nombre { get; }
+
+        public string ruta { get; }
+
+    }
+
     public class Archivo
     {
         public byte[] contenido { get; }
@@ -55,7 +71,7 @@ public class BabyServerLocal
         acciones[ruta] = accion;
     }
 
-    public void iniciar()
+    public void iniciar(CancellationToken cancellation)
     {
         
 
@@ -70,7 +86,7 @@ public class BabyServerLocal
         }
 
         listener.Start();
-        while (true)
+        while (!cancellation.IsCancellationRequested)
         {
             try
             {
@@ -86,6 +102,7 @@ public class BabyServerLocal
                 }
 
                 byte[] array = null;
+                
                 if (obj2 is string s)
                 {
                     array = Encoding.UTF8.GetBytes(s);
@@ -94,6 +111,12 @@ public class BabyServerLocal
                 {
                     array = archivo.contenido;
                     response.Headers.Add("Content-Disposition", "attachment; filename=\"" + archivo.nombre + "\"");
+                }
+                else if (obj2 is ArchivoPorRuta archivoo)
+                {
+                   
+                    array = File.ReadAllBytes(archivoo.ruta);
+                    response.Headers.Add("Content-Disposition", "attachment; filename=\"" + archivoo.nombre + "\"");
                 }
                 else
                 {

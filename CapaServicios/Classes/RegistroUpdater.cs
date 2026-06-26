@@ -22,6 +22,8 @@ namespace CapaServicios.Classes
                 case "forzado": this.forzado = valor.Equals("S"); break;
                 case "unico": this.unico = valor.Equals("S"); break;
                 case "soloManual": this.soloManual = valor.Equals("N"); break;
+                case "rutaDesdeLoc": this.rutaDesdeLoc = valor; break;
+                case "rutaDesdeRem1": this.rutaDesdeRem1 = valor; break;
             }
         }
 
@@ -36,5 +38,7 @@ namespace CapaServicios.Classes
         public bool forzado { get; set; } = false;
         public bool unico { get; set; } = false;
         public bool soloManual { get; set; }
+        public string rutaDesdeLoc { get; set; }
+        public string rutaDesdeRem1 { get; private set; }
     }
 }
