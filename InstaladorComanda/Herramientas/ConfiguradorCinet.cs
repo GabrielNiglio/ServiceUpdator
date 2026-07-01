@@ -146,7 +146,7 @@ namespace InstaladorComanda.Herramientas
         {
             RegistroUpdater reg = new RegistroUpdater()
             {
-                aplicacion = app,
+                aplicacio = app,
                 ejecutable = exe,
                 esServicio = esServicio,
                 forzado = esForzado,

@@ -20,7 +20,7 @@ namespace CapaServicios
 
             var registros = this.getAplicacionesActualizables();
 
-            RegistroUpdater registroUpdater = registros.Where(r => r.aplicacion.Equals(nombre)).FirstOrDefault();
+            RegistroUpdater registroUpdater = registros.Where(r => r.aplicacion.Equals(nombre, StringComparison.OrdinalIgnoreCase)).FirstOrDefault();
 
             return registroUpdater;
         }

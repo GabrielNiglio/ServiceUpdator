@@ -65,7 +65,7 @@ namespace InstaladorComanda.DataAccessExtensions
                 .Select((apli) =>
                 {
                     RegistroUpdater registroUpdater = new RegistroUpdater();
-                    registroUpdater.aplicacion = apli.Key;
+                    registroUpdater.aplicacio = apli.Key;
                     foreach (var paramUpd in apli)
                     {
                         registroUpdater.setParametro(paramUpd.parametro, paramUpd.valor);

@@ -151,7 +151,7 @@ namespace CUpdator
 
                         this.BeginInvoke((Action)(() =>
                         {
-                            label1.Text = "Aplicacion: " + updaterData?.aplicacion?.ToString();
+                            label1.Text = "Aplicacion: " + updaterData?.aplicacio?.ToString();
                             label2.Text = "Desde: " + (updaterData?.rutaDesdeRem1?.ToString() ?? updaterData?.rutaDesde?.ToString());
                             label3.Text = "Hasta: " + updaterData?.rutaHasta?.ToString() + "\\" + updaterData?.ejecutable?.ToString();
 

@@ -99,7 +99,7 @@ namespace ActualizadorManual
                     label1.Text = texto;
                 }));
 
-                logger.EscribeLog(tarea + "-" + reg.aplicacion, texto);
+                logger.EscribeLog(tarea + "-" + reg.aplicacio, texto);
 
             };
 
@@ -114,14 +114,14 @@ namespace ActualizadorManual
 
             RegistroUpdater reg = new RegistroUpdater()
             {
-                aplicacion = "AMozosApi",
+                aplicacio = "AMozosApi",
                 ejecutable = "MozosApi.exe",
                 esServicio = true,
                 rutaHasta = "C:\\cinet\\CinetMozos",
                 rutaDesde = "C:\\CINET\\ACTUALIZACIONES\\RUTA1\\CinetMozos.zip"
             };
 
-            var accionLog = this.getAccionLog(reg.aplicacion);
+            var accionLog = this.getAccionLog(reg.aplicacio);
 
             EjecutarTareaAsync(() => actu.actualizar(reg, accionLog));
 

@@ -70,7 +70,7 @@ namespace CapaServicios
                     try
                     {
                         var registro = new RegistroUpdater();
-                        registro.aplicacion = appName;
+                        registro.aplicacion = appName.ToUpper();
 
                         var regValues = updaterFolder.OpenSubKey(appName);
 

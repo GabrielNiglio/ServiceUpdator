@@ -170,7 +170,7 @@ namespace ServiceUpdator
                             txtEstado.Text = texto;
                         }));
 
-                        logger.EscribeLog(tarea + "-" + app.aplicacion, texto);
+                        logger.EscribeLog(tarea + "-" + app.aplicacio, texto);
                     };
 
                     try
