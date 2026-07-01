@@ -229,14 +229,14 @@ namespace InstaladorComanda.Herramientas
             try
             {
 
-                datosConexion["backoffice"].server = bko.GetValue("Server").ToString();
+                datosConexion["backoffice"].server = bko.GetValue("Server")?.ToString() ?? "backoffice";
                 datosConexion["backoffice"].database = bko.GetValue("Database").ToString();
                 datosConexion["backoffice"].password = 1;
             }
             catch (NullReferenceException ex) { throw new KeyNotFoundException("No existe la odbc 'Backoffice'."); }
             try
             {
-                datosConexion["pdv"].server = pdv.GetValue("Server").ToString();
+                datosConexion["pdv"].server = pdv.GetValue("Server")?.ToString() ?? "pdv";
                 datosConexion["pdv"].database = pdv.GetValue("Database").ToString();
                 datosConexion["pdv"].password = 1;
             }
@@ -244,7 +244,7 @@ namespace InstaladorComanda.Herramientas
 
             try
             {
-                datosConexion["comanda"].server = comanda.GetValue("Server").ToString();
+                datosConexion["comanda"].server = comanda.GetValue("Server")?.ToString() ?? "comanda"; 
                 datosConexion["comanda"].database = comanda.GetValue("Database").ToString();
                 datosConexion["comanda"].password = 1;
             }

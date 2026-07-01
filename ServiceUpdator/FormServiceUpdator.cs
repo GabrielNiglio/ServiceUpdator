@@ -19,7 +19,7 @@ namespace ServiceUpdator
 {
     public partial class FormServiceUpdator : Form
     {
-        private DateTime ultimoDiaHparamLoc = DateTime.MinValue;
+        private DateTime ultimoHparamLoc = DateTime.MinValue;
         private readonly cLog logger;
         private readonly IConfiguracionActualizacion configuracionActualizacion;
         private readonly CancellationToken _cancel;
@@ -55,7 +55,7 @@ namespace ServiceUpdator
                     actualizar();
 
 
-                    while(Math.Max(60000 - sw.ElapsedMilliseconds, 0) > 0)
+                    while (Math.Max(60000 - sw.ElapsedMilliseconds, 0) > 0)
                     {
                         Thread.Sleep(TimeSpan.FromMilliseconds(100));
                         if (cancellation.IsCancellationRequested)
@@ -64,12 +64,13 @@ namespace ServiceUpdator
                         }
 
                     }
-                    
+
                 }
             }
-            catch (Exception ex) { 
-                
-            
+            catch (Exception ex)
+            {
+
+
             }
 
         }
@@ -87,16 +88,16 @@ namespace ServiceUpdator
             try
             {
 
-            ActualizacionService sercivioActu = new ActualizacionService();
+                ActualizacionService sercivioActu = new ActualizacionService();
 
-            sercivioActu.borrarServico("ServiceUpdator", (a, b) => logger.EscribeLog(a, b));
+                sercivioActu.borrarServico("ServiceUpdator", (a, b) => logger.EscribeLog(a, b));
 
             }
             catch { }
-            
+
             Thread hilo = new Thread(() => ciclar(_cancel));
             hilo.Start();
-           
+
             //System.Windows.Forms.Timer timer = new System.Windows.Forms.Timer();
             //timer.Tick += new EventHandler(ciclar);
             //timer.Interval = 60 * 1000;
@@ -108,17 +109,38 @@ namespace ServiceUpdator
 
             try
             {
-                DateTime hoy = DateTime.Now.Date;
-                if (hoy != ultimoDiaHparamLoc)
+                DateTime ahora = DateTime.Now;
+                if (ahora - ultimoHparamLoc > TimeSpan.FromMinutes(10))
                 {
 
                     var cf = new ConnectionFactory();
+                    var bko = cf.connectBackoffice();
                     string version = Assembly.GetExecutingAssembly().GetName().Version.ToString();
-                    cf.connectBackoffice().guardarHparamLoc("ServiceUpdator", version);
-                    ultimoDiaHparamLoc = hoy;
+
+                    var apps = configuracionActualizacion.getAplicacionesActualizables();
+
+                    foreach (var app in apps)
+                    {
+
+                        try
+                        {
+                            string rutaCompletaExe = Path.Combine(app.rutaHasta, app.ejecutable);
+                            string verrr = FileVersionInfo.GetVersionInfo(rutaCompletaExe).FileVersion;
+                            bko.guardarHparamLoc($"{app.aplicacion}|SU", verrr);
+
+                        }
+                        catch(Exception ex)
+                        {
+                            logger.EscribeLog("Escribiendo HPARAMLOC", ex.ToString());
+                        }
+
+                    }
+
+                    ultimoHparamLoc = ahora;
                 }
             }
-            catch(Exception ex) {
+            catch (Exception ex)
+            {
                 logger.EscribeLog("Escribiendo HPARAMLOC", ex.ToString());
             }
 
@@ -130,8 +152,8 @@ namespace ServiceUpdator
                 var listaApps = configuracionActualizacion
                     .getAplicacionesActualizables()
                     .Where(a => a.esServicio || a.forzado)
-                    .Where(a=>!a.soloManual)
-                    .Where(a=> !a.aplicacion.Equals("ServiceUpdator",StringComparison.OrdinalIgnoreCase))
+                    .Where(a => !a.soloManual)
+                    .Where(a => !a.aplicacion.Equals("ServiceUpdator", StringComparison.OrdinalIgnoreCase))
                     .ToList();
 
 

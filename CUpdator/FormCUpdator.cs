@@ -151,9 +151,9 @@ namespace CUpdator
 
                         this.BeginInvoke((Action)(() =>
                         {
-                            label1.Text = "Aplicacion: " + updaterData.aplicacion.ToString();
-                            label2.Text = "Desde: " + updaterData.rutaDesde.ToString();
-                            label3.Text = "Hasta: " + updaterData.rutaHasta.ToString() + "\\" + updaterData.ejecutable.ToString();
+                            label1.Text = "Aplicacion: " + updaterData?.aplicacion?.ToString();
+                            label2.Text = "Desde: " + (updaterData?.rutaDesdeRem1?.ToString() ?? updaterData?.rutaDesde?.ToString());
+                            label3.Text = "Hasta: " + updaterData?.rutaHasta?.ToString() + "\\" + updaterData?.ejecutable?.ToString();
 
                         }));
 
@@ -175,6 +175,14 @@ namespace CUpdator
 
 
                     logInfoAction("", ex.Message);
+                }
+                finally
+                {
+                    this.BeginInvoke((Action)(() =>
+                    {
+                        timer1.Stop();
+                    progressBar1.Value = progressBar1.Maximum;
+                    }));
                 }
 
             }).ContinueWith(t => { Thread.Sleep(10000); logInfoAction("","Se cierra"); Application.Exit(); });
@@ -214,6 +222,14 @@ namespace CUpdator
             lista.Add(updaterDataDeApp);
 
             return lista;
+        }
+
+        private void timer1_Tick(object sender, EventArgs e)
+        {
+            int falta = progressBar1.Maximum - progressBar1.Value;
+
+            progressBar1.Value += (int)(falta*0.03);
+
         }
     }
 }

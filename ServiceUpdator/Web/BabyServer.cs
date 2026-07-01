@@ -1,5 +1,6 @@
 ﻿
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -94,6 +95,11 @@ public class BabyServerLocal
                 HttpListenerContext context = listener.GetContext();
                 HttpListenerRequest request = context.Request;
                 HttpListenerResponse response = context.Response;
+
+                byte[] array = null;
+                try
+                {
+
                 object obj2 = "NO ENCONTRADO";
                 string key = request.RawUrl.Split('?')[0];
                 if (acciones.ContainsKey(key))
@@ -101,7 +107,6 @@ public class BabyServerLocal
                     obj2 = acciones[key](request, response);
                 }
 
-                byte[] array = null;
                 
                 if (obj2 is string s)
                 {
@@ -125,13 +130,23 @@ public class BabyServerLocal
                     array = Encoding.UTF8.GetBytes(s2);
                 }
 
-                response.ContentLength64 = array.Length;
-                Stream outputStream = response.OutputStream;
-                outputStream.Write(array, 0, array.Length);
-                outputStream.Close();
+                }catch(Exception ex)
+                {
+                    array = Encoding.UTF8.GetBytes(ex.Message);
+                }
+                finally
+                {
+                    response.ContentLength64 = array.Length;
+                    Stream outputStream = response.OutputStream;
+                    outputStream.Write(array, 0, array.Length);
+                    outputStream.Close();
+                }
+
+               
             }
             catch
             {
+
             }
         }
     }

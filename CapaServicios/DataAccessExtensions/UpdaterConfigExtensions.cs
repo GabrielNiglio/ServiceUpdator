@@ -61,7 +61,7 @@ namespace InstaladorComanda.DataAccessExtensions
             });
 
             List<RegistroUpdater> listado = configuracionesUpdater
-              .GroupBy(o => o.app)
+              .GroupBy(o => o.app.ToUpper())
                 .Select((apli) =>
                 {
                     RegistroUpdater registroUpdater = new RegistroUpdater();

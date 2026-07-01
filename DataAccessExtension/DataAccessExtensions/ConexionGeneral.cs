@@ -33,9 +33,26 @@ namespace InstaladorComanda.DataAccessExtensions
         {
             try
             {
-                string sSql = "INSERT INTO HPARAMLOC (EMPRESA,LOCAL,PARAMETRO,VALOR,FECHATRANS,EQUIPO,CAJA) " +
-                       $"VALUES ('MOSTAZA',(select para_valor from parametros where para_codigo = 'NOMLOCAL')," +
-                       $"'{app}','{version}',getdate(),'{Environment.MachineName}','0');";
+                string sSql = $@"
+declare @version varchar (30) ; set @version = '{version}';
+declare @aplicacion varchar (30) ; set @aplicacion = '{app}';
+declare @MachineName varchar (30) ; set @MachineName = '{Environment.MachineName}';
+declare @Caja varchar (30) ; set @Caja = ISNULL(select para_valor from parametros where para_codigo = 'NUMCAJA', '0');
+
+
+declare @cantidad int; set @cantidad = (SELECT COUNT(*)
+FROM HParamLoc
+WHERE PARAMETRO = @aplicacion
+  AND CAST(fechatrans AS date) = CAST(GETDATE() AS date)
+  and valor = @version
+  and EQUIPO = @MachineName
+  and caja = @Caja
+)
+
+if(@cantidad = 0)
+INSERT INTO HPARAMLOC (EMPRESA,LOCAL,PARAMETRO,VALOR,FECHATRANS,EQUIPO,CAJA) 
+                       VALUES ('MOSTAZA',(select para_valor from parametros where para_codigo = 'NOMLOCAL'),
+                       @aplicacion, @version,getdate(),@MachineName,@Caja);";
                
                 return ejecutarAccion(sSql);
 
@@ -212,14 +229,14 @@ namespace InstaladorComanda.DataAccessExtensions
             conn.Desconectar();
         }
 
-        public long guardarHparamLoc(string app, string version)
-        {
-            string sSql = "INSERT INTO HPARAMLOC (EMPRESA,LOCAL,PARAMETRO,VALOR,FECHATRANS,EQUIPO,CAJA) " +
-                   $"VALUES ('MOSTAZA',(select para_valor from parametros where para_codigo = 'NOMLOCAL')," +
-                   $"'{app}','{version}',getdate(),'{Environment.MachineName}','0');";
+        //public long guardarHparamLoc(string app, string version)
+        //{
+        //    string sSql = "INSERT INTO HPARAMLOC (EMPRESA,LOCAL,PARAMETRO,VALOR,FECHATRANS,EQUIPO,CAJA) " +
+        //           $"VALUES ('MOSTAZA',(select para_valor from parametros where para_codigo = 'NOMLOCAL')," +
+        //           $"'{app}','{version}',getdate(),'{Environment.MachineName}','0');";
 
-            return ejecutarAccion(sSql, ignoraErrores: true);
-        }
+        //    return ejecutarAccion(sSql, ignoraErrores: true);
+        //}
 
         public DataTable getDt(string query, bool ignoraErrores = false)
         {

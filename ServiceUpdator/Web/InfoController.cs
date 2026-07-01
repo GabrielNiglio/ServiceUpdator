@@ -25,9 +25,9 @@ namespace ServiceUpdator.Web
             this.addEndpoint("/", doGetInfo);
             this.addEndpoint("/info", doAppInfo);
 
-            this.addEndpoint("/ruta", doDownloadFromUpd);
+            //this.addEndpoint("/ruta", doDownloadFromUpd);
 
-            this.addEndpoint("/rutax", doDownloadFromRutax);
+            //this.addEndpoint("/rutax", doDownloadFromRutax);
             this.addEndpoint("/descarga", doDescarga);
 
         }
@@ -40,21 +40,21 @@ namespace ServiceUpdator.Web
             configurar();
         }
 
-        private Object doDownloadFromUpd(HttpListenerRequest req, HttpListenerResponse res)
-        {
-            var appName = req.QueryString["app"];
-            var apps = actuConf.getAplicacionesActualizables();
-            try
-            {
-                string ruta = apps.Where(app => app.aplicacion == appName).Select(app => app.rutaDesde).First();
+        //private Object doDownloadFromUpd(HttpListenerRequest req, HttpListenerResponse res)
+        //{
+        //    var appName = req.QueryString["app"];
+        //    var apps = actuConf.getAplicacionesActualizables();
+        //    try
+        //    {
+        //        string ruta = apps.Where(app => app.aplicacion == appName).Select(app => app.rutaDesde).First();
 
-                return new BabyServer.Archivo("CUpdator.zip", new StreamReader(ruta));
-            }
-            catch (Exception ex)
-            {
-                return ex;
-            }
-        }
+        //        return new BabyServer.Archivo("CUpdator.zip", new StreamReader(ruta));
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return ex;
+        //    }
+        //}
 
         private Object doDescarga(HttpListenerRequest req, HttpListenerResponse res)
         {
@@ -75,21 +75,21 @@ namespace ServiceUpdator.Web
         }
 
 
-        private Object doDownloadFromRutax(HttpListenerRequest req, HttpListenerResponse res)
-        {
-            var appName = req.QueryString["app"];
-            try
-            {
-                var zipName = appName + ".zip";
-                var app = actuConf.getAplicacionActualizable("CUpdator");
-                var ruta = app.rutaDesde.Replace("CUpdator.zip", zipName);
-                return new BabyServer.Archivo(zipName, File.ReadAllBytes(ruta));
-            }
-            catch (Exception ex)
-            {
-                return ex;
-            }
-        }
+        //private Object doDownloadFromRutax(HttpListenerRequest req, HttpListenerResponse res)
+        //{
+        //    var appName = req.QueryString["app"];
+        //    try
+        //    {
+        //        var zipName = appName + ".zip";
+        //        var app = actuConf.getAplicacionActualizable("CUpdator");
+        //        var ruta = app.rutaDesde.Replace("CUpdator.zip", zipName);
+        //        return new BabyServer.Archivo(zipName, File.ReadAllBytes(ruta));
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return ex;
+        //    }
+        //}
 
         public class RespAppInfo
         {
@@ -115,7 +115,7 @@ namespace ServiceUpdator.Web
 
 
             var appDara = actuConf.getAplicacionActualizable(appName);
-            if (appDara == null)
+            if (appDara == null || appDara.rutaDesdeLoc == null)
             {
                 return respAppInfo;
             }

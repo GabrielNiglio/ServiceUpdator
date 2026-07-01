@@ -42,6 +42,11 @@ namespace CapaServicios
                     }
                 }
 
+                foreach(var registro in registroUpdatersTemp)
+                {
+                    registro.aplicacion = registro.aplicacion.ToUpper();
+                }
+
             }
             catch { }
             try
@@ -61,9 +66,9 @@ namespace CapaServicios
             {
 
             }
-            var appsEnBko = registroUpdatersDB.Select(r => r.aplicacion).ToHashSet();
+            var appsEnBko = registroUpdatersDB.Select(r => r.aplicacion.ToUpper()).ToHashSet();
             var registroUpdaters = registroUpdatersTemp
-                .Where(r => !appsEnBko.Contains(r.aplicacion))
+                .Where(r => !appsEnBko.Contains(r.aplicacion.ToUpper()))
                 .ToList();
 
             registroUpdaters.AddRange(registroUpdatersDB);

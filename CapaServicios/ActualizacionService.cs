@@ -433,6 +433,9 @@ namespace CapaServicios
             {
 
                 HttpClient cliente = new HttpClient();
+
+
+                logAction($"DESCARGA-{registro.aplicacion}", $"Accediendo...");
                 HttpResponseMessage resp = cliente.GetAsync(registro.rutaDesdeRem1).Result;
 
                 string jInfo = resp.Content.ReadAsStringAsync().Result;
@@ -440,22 +443,42 @@ namespace CapaServicios
                 RespuestaInfo info = JsonConvert.DeserializeObject<RespuestaInfo>(jInfo);
 
                 string fechaRem = info.fecha;
+                logAction($"DESCARGA-{registro.aplicacion}", $"{info.urlDescarga} ({info.fecha})");
+
                 FileInfo fI = new FileInfo(registro.rutaDesdeLoc);
                 string fechaLoc = fI.LastWriteTime.ToString("yyyy/MM/dd HH:mm:ss");
 
+                logAction($"DESCARGA-{registro.aplicacion}", $"{registro.rutaDesdeLoc} ({fechaLoc})");
+
                 if (fechaLoc.CompareTo(fechaRem) < 0)
                 {
-
-                    using (WebClient wc = new WebClient())
-                    {
-
-                        File.Delete(registro.rutaDesdeLoc);
-                        wc.DownloadFile(info.urlDescarga, registro.rutaDesdeLoc);
-                    }
+                    descargarArchivo(registro, info);
 
                 }
             }
-            catch (Exception ex) { }
+            catch (Exception ex) {
+                logAction($"DESCARGA-{registro.aplicacion}", "ERRROR: " + ex.ToString());
+            }
+        }
+
+        private static void descargarArchivo(RegistroUpdater registro, RespuestaInfo info)
+        {
+            using (WebClient wc = new WebClient())
+            {
+                if (File.Exists(registro.rutaDesdeLoc))
+                {
+                    File.Delete(registro.rutaDesdeLoc);
+                }
+
+                string directorio = Path.GetDirectoryName(registro.rutaDesdeLoc);
+
+                if (!string.IsNullOrEmpty(directorio) && !Directory.Exists(directorio))
+                {
+                    Directory.CreateDirectory(directorio);
+                }
+
+                wc.DownloadFile(info.urlDescarga, registro.rutaDesdeLoc);
+            }
         }
     }
 }
