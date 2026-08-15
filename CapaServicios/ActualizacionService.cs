@@ -166,7 +166,7 @@ namespace CapaServicios
             {
 
 
-                loggAction("Actualizar", "Iniciando servicio...");
+                loggAction("Actualizar", "Iniciando servicio "+servicio.DisplayName+"...");
                 try
                 {
                     if (servicio.Status != ServiceControllerStatus.Running)
@@ -196,20 +196,34 @@ namespace CapaServicios
             public override void stop(Action<String, string> loggAction)
             {
 
-                loggAction("Actualizar", "Deteniendo servicio...");
+                loggAction("Actualizar", "Iniciando deteniencion de servicio...");
                 try
                 {
                     ServiceControllerStatus[] estados =
                         new[] { ServiceControllerStatus.Stopped, ServiceControllerStatus.StopPending };
 
-                    if (!estados.Contains(servicio.Status))
+
+
+                    if (servicio.Status == ServiceControllerStatus.Stopped)
+                    {
+                        loggAction("Actualizar", "Ya se encontraba detenido");
+
+                    }
+                    else if (servicio.Status == ServiceControllerStatus.StopPending)
+                    {
+                        loggAction("Actualizar", "Se encuentra siendo detenido");
+
+                    }
+                    else
                     {
                         servicio.Stop();
-                        servicio.WaitForStatus(ServiceControllerStatus.Stopped, TimeSpan.FromMinutes(1));
                     }
 
 
-                    loggAction("Actualizar", "Se detuvo el servicio correctamente");
+
+                    servicio.WaitForStatus(ServiceControllerStatus.Stopped, TimeSpan.FromMinutes(2));
+                    servicio.Refresh();
+                    loggAction("Actualizar", $"El servicio ahora esta: {servicio.Status}");
 
                 }
                 catch (Exception ex)
@@ -346,42 +360,53 @@ namespace CapaServicios
             {
                 msgValidarZip += $"({e.Message})";
             }
+            string mensajeFin = ".";
 
-            logAction("Validar Zip", msgValidarZip);
-            string mensajeFin = "";
-
-            logAction("Validar Exe", rutaExe + "(" + fechaExe + ")");
-
-            bool actualiza = fechaZip.CompareTo(fechaExe) > 0;
-
-            if (actualiza)
+            try
             {
-                int reintentos = 0;
-                bool finalizado = false;
-                while (!finalizado && reintentos < 3)
-                {
 
-                    app.stop(logAction);
-                    logAction("Actualizar", $"Descomprimiendo archivos... (Reintentos: {reintentos})");
-                    try
+                logAction("Validar Zip", msgValidarZip);
+
+                logAction("Validar Exe", rutaExe + "(" + fechaExe + ")");
+
+                bool actualiza = fechaZip.CompareTo(fechaExe) > 0;
+
+                if (actualiza)
+                {
+                    int reintentos = 0;
+                    bool finalizado = false;
+                    while (!finalizado && reintentos < 3)
                     {
-                        var zipfile = new FastZip();
-                        zipfile.ExtractZip(rutaZip,rutaCarpeta, "");
-                        finalizado = true;
+
+                        app.stop(logAction);
+                        logAction("Actualizar", $"Descomprimiendo archivos... (Reintentos: {reintentos})");
+                        try
+                        {
+                            var zipfile = new FastZip();
+                            zipfile.ExtractZip(rutaZip, rutaCarpeta, "");
+                            finalizado = true;
+                        }
+                        catch (Exception ex)
+                        {
+                            logAction("Actualizar", ex.Message);
+                        }
+                        reintentos++;
                     }
-                    catch (Exception ex)
-                    {
-                        logAction("Actualizar", ex.Message);
-                    }
-                    reintentos++;
+                    mensajeFin = "Actualizado";
+
+
                 }
-                mensajeFin = "Actualizado";
+                else
+                {
+                    mensajeFin = "No hay pendientes de actualizacion";
+                }
 
 
             }
-            else
+            catch (Exception ex)
             {
-                mensajeFin = "No hay pendientes de actualizacion";
+
+                mensajeFin = "Error: " + ex.Message;
             }
 
 
@@ -456,7 +481,8 @@ namespace CapaServicios
 
                 }
             }
-            catch (Exception ex) {
+            catch (Exception ex)
+            {
                 logAction($"DESCARGA-{registro.aplicacion}", "ERRROR: " + ex.ToString());
             }
         }

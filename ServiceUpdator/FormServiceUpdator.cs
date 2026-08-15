@@ -6,6 +6,7 @@ using ICSharpCode.SharpZipLib.Zip;
 using InstaladorComanda;
 using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -43,6 +44,9 @@ namespace ServiceUpdator
 
         private void ciclar(CancellationToken cancellation)
         {
+            int segundos = (int) TimeSpan.FromMinutes(5).TotalSeconds;
+            var x = ConfigurationManager.AppSettings["ciclo"] ?? segundos.ToString();
+            int.TryParse(x, out segundos);
 
             try
             {
@@ -50,21 +54,21 @@ namespace ServiceUpdator
 
                 while (!cancellation.IsCancellationRequested)
                 {
-                    Stopwatch sw = new Stopwatch();
-                    sw.Start();
+                    Stopwatch sw = Stopwatch.StartNew();
+
                     actualizar();
 
+                    long restante = segundos * 1000 - sw.ElapsedMilliseconds;
 
-                    while (Math.Max(60000 - sw.ElapsedMilliseconds, 0) > 0)
+                    while (restante > 0)
                     {
-                        Thread.Sleep(TimeSpan.FromMilliseconds(100));
+                        Thread.Sleep((int)Math.Min(restante, 100));
+
                         if (cancellation.IsCancellationRequested)
-                        {
                             return;
-                        }
 
+                        restante = segundos * 1000 - sw.ElapsedMilliseconds;
                     }
-
                 }
             }
             catch (Exception ex)
@@ -129,7 +133,7 @@ namespace ServiceUpdator
                             bko.guardarHparamLoc($"{app.aplicacion}|SU", verrr);
 
                         }
-                        catch(Exception ex)
+                        catch (Exception ex)
                         {
                             logger.EscribeLog("Escribiendo HPARAMLOC", ex.ToString());
                         }
@@ -170,7 +174,7 @@ namespace ServiceUpdator
                             txtEstado.Text = texto;
                         }));
 
-                        logger.EscribeLog(tarea + "-" + app.aplicacio, texto);
+                        logger.EscribeLog(tarea + "-" + app.aplicacion, texto);
                     };
 
                     try

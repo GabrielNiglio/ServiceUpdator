@@ -16,7 +16,7 @@ using System.Windows.Forms;
 namespace ServiceUpdator
 {
 
-  
+
     internal static class Program
     {
         /// <summary>
@@ -25,6 +25,12 @@ namespace ServiceUpdator
         [STAThread]
         static void Main()
         {
+
+            if (Process.GetProcessesByName(Process.GetCurrentProcess().ProcessName).Length > 1)
+            {
+                return;
+            }
+
 
             DateTime start = DateTime.Now;
 
@@ -42,12 +48,13 @@ namespace ServiceUpdator
             {
                 try
                 {
-                BabyServerLocal server = new InfoController(start, actuConf, form);
+                    BabyServerLocal server = new InfoController(start, actuConf, form);
 
-                server.setPuerto(8050);
-                server.iniciar(token);
+                    server.setPuerto(8050);
+                    server.iniciar(token);
 
-                }catch(Exception e)
+                }
+                catch (Exception e)
                 {
                 }
             });

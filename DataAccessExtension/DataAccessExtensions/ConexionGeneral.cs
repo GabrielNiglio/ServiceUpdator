@@ -37,7 +37,7 @@ namespace InstaladorComanda.DataAccessExtensions
 declare @version varchar (30) ; set @version = '{version}';
 declare @aplicacion varchar (30) ; set @aplicacion = '{app}';
 declare @MachineName varchar (30) ; set @MachineName = '{Environment.MachineName}';
-declare @Caja varchar (30) ; set @Caja = ISNULL(select para_valor from parametros where para_codigo = 'NUMCAJA', '0');
+declare @Caja varchar (30) ; set @Caja = ISNULL((select para_valor from parametros where para_codigo = 'NUMCAJA'), '0');
 
 
 declare @cantidad int; set @cantidad = (SELECT COUNT(*)

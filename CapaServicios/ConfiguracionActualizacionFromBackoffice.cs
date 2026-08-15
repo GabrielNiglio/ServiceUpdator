@@ -19,7 +19,9 @@ namespace CapaServicios
 
             var registros = this.getAplicacionesActualizables();
 
-            RegistroUpdater registroUpdater = registros.Where(r => r.aplicacion.ToUpper() == (nombre.ToUpper())).FirstOrDefault();
+            RegistroUpdater registroUpdater = registros
+                .Where(r => r.aplicacion.ToUpper() == (nombre.ToUpper()))
+                .FirstOrDefault();
 
             return registroUpdater;
         }
@@ -35,14 +37,29 @@ namespace CapaServicios
 
                 if (File.Exists(rutaTemp))
                 {
+                    string apa = "";
                     using (StreamReader sr = new StreamReader(rutaTemp))
                     {
-                        registroUpdatersTemp = JsonConvert.DeserializeObject<List<RegistroUpdater>>(sr.ReadToEnd());
+                        registroUpdatersTemp = JsonConvert.DeserializeObject<List<RegistroUpdater>>(sr.ReadToEnd()) 
+                            ?? new List<RegistroUpdater>();
+
+
 
                     }
+                    try
+                    {
+                        using (StreamWriter x = new StreamWriter("c:\\cinet\\xd.txt", append: false))
+                        {
+
+                            x.WriteLine(rutaTemp);
+                            x.WriteLine(apa);
+                        }
+                    }
+                    catch { }
+
                 }
 
-                foreach(var registro in registroUpdatersTemp)
+                foreach (var registro in registroUpdatersTemp)
                 {
                     registro.aplicacion = registro.aplicacion.ToUpper();
                 }
@@ -59,7 +76,7 @@ namespace CapaServicios
 
 
                 }
-         
+
 
             }
             catch

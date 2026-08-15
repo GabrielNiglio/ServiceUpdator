@@ -20,14 +20,17 @@ namespace CUpdator
     public partial class FormCUpdator : Form
     {
 
-        private readonly string aplicacion;
-        private readonly IConfiguracionActualizacion configuracionActualizacion;
+        private string aplicacion;
+        private IConfiguracionActualizacion configuracionActualizacion;
         private readonly string runId;
+        private readonly string[] args;
 
-        public FormCUpdator(string aplicacion)
+        public FormCUpdator(string[] args)
         {
             InitializeComponent();
-            this.aplicacion = aplicacion;
+            this.args = args;
+            this.aplicacion = args[0];
+
             this.runId = Guid.NewGuid().ToString();
 
         }
@@ -44,9 +47,9 @@ namespace CUpdator
             catch (Exception ex) { }
         }
 
-        public FormCUpdator(string aplicacion, IConfiguracionActualizacion configuracionActualizacion) : this(aplicacion)
+        public FormCUpdator()
         {
-            this.configuracionActualizacion = configuracionActualizacion;
+          
         }
 
         private void Form1_Load(object sender, EventArgs e)
@@ -72,11 +75,8 @@ namespace CUpdator
 
         private void Form1_Shown(object sender, EventArgs e)
         {
-            int paso = 1;
-            logu("Iniciando formulario con: " + aplicacion);
 
-            ActualizacionService actu = new ActualizacionService();
-            logu((paso++).ToString());
+          
 
             Action<string, string> logInfoAction = (s1, s2) =>
             {
@@ -122,12 +122,47 @@ namespace CUpdator
 
                 }));
             };
-          
 
-           logu((paso++).ToString());
+            int paso = 0;
+
+            logu((paso++).ToString());
 
             Task.Run(() =>
             {
+
+
+
+
+                logu("iniciando: " + string.Join(" ", args));
+
+
+                this.configuracionActualizacion = ConfiguracionActualizacionFactory.getDefault();
+                var actuConf = this.configuracionActualizacion;
+
+
+
+                //try
+                //{
+                //    var x = actuConf.getAplicacionActualizable(args[0]);
+                //    logu("empezando: " + string.Join(" ", args) + " // " + x.esServicio);
+                //}
+                //catch (Exception ex)
+                //{
+                //    logu("Error: " + ex.Message);
+                //}
+
+                //if()
+
+                paso = 1;
+
+
+
+                logu("Iniciando formulario con: " + aplicacion);
+
+
+
+                ActualizacionService actu = new ActualizacionService();
+                logu((paso++).ToString());
 
                 try
                 {
@@ -138,6 +173,10 @@ namespace CUpdator
                     if (aplicacion != "-serv")
                     {
                         lista = getAplicacion();
+                        if (!lista.Any())
+                        {
+                            throw new Exception("No se encuentra registrada la aplicacion: " + this.aplicacion);
+                        }
                     }
                     else
                     {
@@ -151,8 +190,8 @@ namespace CUpdator
 
                         this.BeginInvoke((Action)(() =>
                         {
-                            label1.Text = "Aplicacion: " + updaterData?.aplicacio?.ToString();
-                            label2.Text = "Desde: " + (updaterData?.rutaDesdeRem1?.ToString() ?? updaterData?.rutaDesde?.ToString());
+                            label1.Text = "Aplicacion: " + updaterData?.aplicacion?.ToString();
+                            label2.Text = "Desde: " + (updaterData?.rutaDesdeLoc?.ToString() ?? updaterData?.rutaDesde?.ToString());
                             label3.Text = "Hasta: " + updaterData?.rutaHasta?.ToString() + "\\" + updaterData?.ejecutable?.ToString();
 
                         }));
@@ -228,7 +267,7 @@ namespace CUpdator
         {
             int falta = progressBar1.Maximum - progressBar1.Value;
 
-            progressBar1.Value += (int)(falta*0.03);
+            progressBar1.Value += (int)(falta*0.005);
 
         }
     }

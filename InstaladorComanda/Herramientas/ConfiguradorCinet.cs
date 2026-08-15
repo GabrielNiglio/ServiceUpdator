@@ -29,6 +29,7 @@ namespace InstaladorComanda.Herramientas
 
         public ConfiguradorCinet()
         {
+
             this.factory = new ConnectionFactory();
 
             using (var conn = factory.connectBackoffice())
@@ -74,10 +75,10 @@ namespace InstaladorComanda.Herramientas
             using (var conn = factory.connectBackoffice())
             {
 
-                    conn.ejecutarAccion(TablaParametosPDV, disparaExcepcion: false);
-          
-                    conn.ejecutarAccion(tablaUpdater, disparaExcepcion: false);
-             
+                conn.ejecutarAccion(TablaParametosPDV, disparaExcepcion: false);
+
+                conn.ejecutarAccion(tablaUpdater, disparaExcepcion: false);
+
 
             }
 
@@ -98,7 +99,7 @@ namespace InstaladorComanda.Herramientas
                  .addTupla("PARA_DELETE", paraDelete)
                  .addTupla("PARA_FECHA", new SqlFunction("GETDATE()"));
 
-            conn.ejecutarAccion(sParametro,disparaExcepcion: true);
+            conn.ejecutarAccion(sParametro, disparaExcepcion: true);
 
         }
 
@@ -127,9 +128,9 @@ namespace InstaladorComanda.Herramientas
                 esServicio: true,
                 esForzado: false,
                 esUnico: true
-                ); 
+                );
         }
-    
+
         private RegistroUpdater crearRegUpdAppUnica(string app, string exe)
         {
             return this.crearRegitroUpdater(
@@ -140,20 +141,20 @@ namespace InstaladorComanda.Herramientas
              esUnico: true
              );
         }
-    
+
         private RegistroUpdater crearRegitroUpdater(string app, string exe,
-            bool esServicio, bool esUnico , bool esForzado )
+            bool esServicio, bool esUnico, bool esForzado)
         {
             RegistroUpdater reg = new RegistroUpdater()
             {
-                aplicacio = app,
+                aplicacion = app,
                 ejecutable = exe,
                 esServicio = esServicio,
                 forzado = esForzado,
                 unico = esUnico,
                 rutaDesde = $"\\\\{this.nombreServer}\\CINET\\ACTUALIZACIONES\\{this.ruta}\\{app}.zip",
                 rutaHasta = $"C:\\CINET\\{app}",
-                rutaDescarga = $"http://cinetsoporte.ddns.net:84/mensaje/Aplicativos/zip/{app}"
+                rutaDescarga = ConfigurationManager.AppSettings["rutaDescarga"] + $"/mensaje/Aplicativos/zip/{app}"
             };
 
             return reg;
@@ -175,7 +176,8 @@ namespace InstaladorComanda.Herramientas
                 case "CUPDATOR": return crearRegUpdAppUnica("CUpdator", "CUpdator.exe");
 
                 //Aplicativos Unicos
-                case "SERVICEUPDATOR": return crearRegitroUpdater(
+                case "SERVICEUPDATOR":
+                    return crearRegitroUpdater(
                     "ServiceUpdator", "ServiceUpdator.exe",
                     esUnico: true, esServicio: false, esForzado: false
                  );
@@ -202,6 +204,14 @@ namespace InstaladorComanda.Herramientas
 
         public void crearArchivoConfigConexiones()
         {
+
+            string sCodClave = ConfigurationManager.AppSettings.Get("clave");
+
+            int codClave = 1;
+
+            int.TryParse(sCodClave, out codClave);
+
+
             var odbcs = Registry.CurrentUser.OpenSubKey("SOFTWARE")
                   .OpenSubKey("ODBC")
                   .OpenSubKey("ODBC.INI");
@@ -230,23 +240,23 @@ namespace InstaladorComanda.Herramientas
             {
 
                 datosConexion["backoffice"].server = bko.GetValue("Server")?.ToString() ?? "backoffice";
-                datosConexion["backoffice"].database = bko.GetValue("Database").ToString();
-                datosConexion["backoffice"].password = 1;
+                datosConexion["backoffice"].database = bko.GetValue("Database")?.ToString() ?? "backoffice";
+                datosConexion["backoffice"].password = codClave;
             }
             catch (NullReferenceException ex) { throw new KeyNotFoundException("No existe la odbc 'Backoffice'."); }
             try
             {
                 datosConexion["pdv"].server = pdv.GetValue("Server")?.ToString() ?? "pdv";
-                datosConexion["pdv"].database = pdv.GetValue("Database").ToString();
-                datosConexion["pdv"].password = 1;
+                datosConexion["pdv"].database = pdv.GetValue("Database")?.ToString() ?? "pdv";
+                datosConexion["pdv"].password = codClave;
             }
             catch (NullReferenceException ex) { throw new KeyNotFoundException("No existe la odbc 'cinet_pdv'."); }
 
             try
             {
-                datosConexion["comanda"].server = comanda.GetValue("Server")?.ToString() ?? "comanda"; 
-                datosConexion["comanda"].database = comanda.GetValue("Database").ToString();
-                datosConexion["comanda"].password = 1;
+                datosConexion["comanda"].server = comanda.GetValue("Server")?.ToString() ?? "comanda";
+                datosConexion["comanda"].database = comanda.GetValue("Database")?.ToString() ?? "comanda";
+                datosConexion["comanda"].password = codClave;
             }
             catch (NullReferenceException ex) { throw new KeyNotFoundException("No existe la odbc 'Comanda'."); }
 
@@ -320,9 +330,25 @@ namespace InstaladorComanda.Herramientas
 
         }
 
+
+        public int getClaveConfigurada()
+        {
+
+            string sCodClave = ConfigurationManager.AppSettings.Get("clave");
+
+            int codClave = 1;
+
+            int.TryParse(sCodClave, out codClave);
+
+            return codClave;
+        }
+
         internal void actualizarParametrosPdv(bool usaDbRemo = true, string serverRemoto = "", string baseRemota = "")
         {
-            using (var connPdv = usaDbRemo ? factory.connect(serverRemoto, baseRemota, 1) : factory.connectPdv())
+
+            int codClave = getClaveConfigurada();
+
+            using (var connPdv = usaDbRemo ? factory.connect(serverRemoto, baseRemota, codClave) : factory.connectPdv())
             using (var connBko = factory.connectBackoffice())
             {
                 string ULTPARAMID = "ULTPARAMID";
@@ -401,7 +427,9 @@ namespace InstaladorComanda.Herramientas
         internal List<string> getBasesPdv(string rutaServer)
         {
 
-            using (var connMaster = factory.connect(rutaServer, "master", 1))
+            int codClave = getClaveConfigurada();
+
+            using (var connMaster = factory.connect(rutaServer, "master", codClave))
             {
                 string query = "select name from sys.databases where name like '%cinet_pdv%'";
                 return connMaster.getConsultaAsObject(query, row => row["name"].ToString());

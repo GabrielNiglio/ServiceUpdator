@@ -150,7 +150,7 @@ namespace ServiceUpdator.Web
                 }
                 catch { }
 
-                return new { app.aplicacio, version };
+                return new { app.aplicacion, version };
             });
 
             return new

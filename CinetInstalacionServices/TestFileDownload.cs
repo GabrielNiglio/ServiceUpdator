@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using ICSharpCode.SharpZipLib.Zip;
 using static ICSharpCode.SharpZipLib.Zip.FastZip;
+using System.Configuration;
 
 namespace CinetInstalacionServices
 {
@@ -23,10 +24,14 @@ namespace CinetInstalacionServices
 
         public async Task bajarAplicativo(string aplicativo, Action<string, string> logAccion)
         {
+            string rutaDescarga = ConfigurationManager.AppSettings["rutaDescarga"]
+                ?? "http://cinetsoporte.ddns.net/";
+
+
 
             System.IO.Directory.CreateDirectory("C:\\Cinet");
             System.IO.Directory.CreateDirectory("C:\\Cinet\\Comprimidos");
-            var url = $"http://cinetsoporte.ddns.net:84/mensaje/Aplicativos/zip/{aplicativo}";
+            var url = rutaDescarga + $"/mensaje/Aplicativos/zip/{aplicativo}";
             var cinet_route = $"C:\\cinet";
             var zip_dst = $"{cinet_route}\\Comprimidos\\{aplicativo}.zip";
             var client = new HttpClient();

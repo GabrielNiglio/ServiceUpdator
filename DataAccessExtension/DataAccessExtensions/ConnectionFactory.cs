@@ -60,12 +60,16 @@ namespace InstaladorComanda
         public ConnectionFactory()
         {
 
+
+
             tipoConexion = ConfigurationManager.AppSettings["conexion"]?.ToLower() ?? "archivo";
             if (tipoConexion.Equals("odbc"))
             {
-                this.conexBackoffice = generarStringConexionODBC("backoffice", 1);
-                this.conexComanda = generarStringConexionODBC("comanda", 1);
-                this.conexPdv = generarStringConexionODBC("cinet_pdv", 1);
+
+
+                this.conexBackoffice = generarStringConexionODBC("backoffice");
+                this.conexComanda = generarStringConexionODBC("comanda");
+                this.conexPdv = generarStringConexionODBC("cinet_pdv");
             }
             else
             {
@@ -74,20 +78,15 @@ namespace InstaladorComanda
         }
 
 
-        private string generarStringConexion(string server, string database, int passwordId)
+
+
+
+        private string generarStringConexion(string server, string database, int iPassword)
         {
 
-
-            string usuario = "sa";
             string password;
-            if (passwordId == 1)
-            {
-                password = "cinettorcel";
-            }
-            else
-            {
-                password = "";
-            }
+            string usuario = "sa";
+            password = getPasswordById(iPassword);
 
             return $"DATA SOURCE={server};" +
                 $"Database={database};" +
@@ -96,15 +95,43 @@ namespace InstaladorComanda
 
         }
 
-        private string generarStringConexionODBC(string ODBC, int passwordId)
+        private static string getPasswordById(int iPassword)
+        {
+            string password;
+            if (iPassword == 1)
+            {
+                password = "cinettorcel";
+            }
+            else if (iPassword == 2)
+            {
+                password = "Cinet1212";
+            }
+            else
+            {
+                password = "";
+            }
+
+            return password;
+        }
+
+        private string generarStringConexionODBC(string ODBC)
         {
 
+            string sCodClave = ConfigurationManager.AppSettings.Get("clave");
+
+            int codClave = 1;
+
+            int.TryParse(sCodClave, out codClave);
 
             string usuario = "sa";
             string password;
-            if (passwordId == 1)
+            if (codClave == 1)
             {
                 password = "cinettorcel";
+            }
+            else if (codClave == 2)
+            {
+                password = "Cinet1212";
             }
             else
             {
@@ -132,9 +159,9 @@ namespace InstaladorComanda
         }
 
 
-        public ConexionGeneral connect(string server, string database, int passwordId)
+        public ConexionGeneral connect(string server, string database, int password)
         {
-            string conectionString = generarStringConexion(server, database, passwordId);
+            string conectionString = generarStringConexion(server, database,password);
 
             IDbConnection conn = new SqlConnection(conectionString);
             // IConexion conn = DaoFactory.GetFactory(conectionString);

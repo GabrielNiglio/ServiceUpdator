@@ -114,7 +114,7 @@ namespace InstaladorComanda
                 List<RegistroUpdater> appActualizables = configUpd.getAplicacionesActualizables();
 
                 IEnumerable<RegistroUpdater> registros = appActualizables
-                    .Where(a => lista.Contains(a.aplicacio.ToUpper()));
+                    .Where(a => lista.Contains(a.aplicacion.ToUpper()));
 
                 foreach (var registro in registros)
                 {
